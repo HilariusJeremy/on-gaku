@@ -33,6 +33,7 @@ POST /annotate — accepts an image, returns detected notes with pixel positions
 POST /theory — accepts the same image, returns key, chords, scales, and concepts as JSON.
 
 # Project structure
+```
 ongaku/
 ├── backend/
 │   ├── app/
@@ -59,7 +60,7 @@ ongaku/
 ├── samples/
 ├── docker-compose.yml
 └── README.md
-
+```
 
 # Running locally
 ## Backend
