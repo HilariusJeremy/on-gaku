@@ -85,6 +85,3 @@ def parse_musicxml(filepath: str) -> dict:
         },
         "measures": measures
     }
-
-
-print(parse_musicxml('./sabbath_short.musicxml'))
