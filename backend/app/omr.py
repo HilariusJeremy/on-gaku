@@ -29,8 +29,6 @@ def parse_musicxml(filepath: str) -> dict:
                 key_signature = "♭" if fifths<0 else "♯" if fifths>0 else ""
 
             notes = measure.findall('note')
-            if not notes:
-                continue
 
             bass = []
             treble = []
@@ -45,6 +43,11 @@ def parse_musicxml(filepath: str) -> dict:
                             treble = ['rest']  # only set rest if no notes found yet
                         elif clef_mark[staff.text] == 'bass' and not bass:
                             bass = ['rest']  # only set rest if no notes found yet
+                    continue
+
+                if clef_mark[staff.text] == 'treble' and treble == ['rest']:
+                    continue
+                if clef_mark[staff.text] == 'bass' and bass == ['rest']:
                     continue
 
                 for pitch in note.findall('pitch'):
@@ -63,7 +66,7 @@ def parse_musicxml(filepath: str) -> dict:
                         treble.append(note_after_key_signature)
 
             measures.append({
-                "number": measure.attrib['number'],
+                "number": int(measure.attrib['number']),
                 "treble": treble,
                 "bass": bass
             })
@@ -85,3 +88,29 @@ def parse_musicxml(filepath: str) -> dict:
         },
         "measures": measures
     }
+
+def extract_measure_bboxes(num_groups, staffs, barlines, img_width):
+    barlines = sorted(barlines, key=lambda barline: (barline.group, barline.bbox[0]))
+    bbox_coords = []
+
+    for group in range(num_groups):
+        for staff in staffs.tolist()[0]:
+            if staff.group == group:
+                if staff.track == 0:
+                    y_upper = staff.y_upper
+                if staff.track == 1:
+                    y_lower = staff.y_lower
+
+        group_barlines = [b for b in barlines if b.group == group]
+        group_bboxes = []
+
+        for i in range(len(group_barlines) + 1):
+            x1 = 0 if i == 0 else int(group_barlines[i-1].bbox[2])
+            x2 = img_width if i == len(group_barlines) else int(group_barlines[i].bbox[0])
+
+            if x2 - x1 < 100:  # filter repeat barline slivers
+                continue
+            group_bboxes.append((x1, y_upper, x2, y_lower))
+            
+        bbox_coords.extend(group_bboxes[:-1])  # drop the last (empty trailing space)
+    return bbox_coords
