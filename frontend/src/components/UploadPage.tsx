@@ -4,11 +4,6 @@ import LoadingSpinner from './LoadingSpinner/LoadingSpinner';
 const UploadPage = ({onResult}: {onResult: (data: AnnotationData) => void}) => {
     const [loading, setLoading] = useState(false)
     const controllerRef = useRef<AbortController | null>(null)
-    const onAbort = () => {
-        if(!controllerRef.current) return
-        controllerRef.current.abort()
-        setLoading(false)
-    }
     
     const handleSubmit = (e: React.ChangeEvent<HTMLInputElement>) => {
         const formData = new FormData();
@@ -35,7 +30,6 @@ const UploadPage = ({onResult}: {onResult: (data: AnnotationData) => void}) => {
         <input type="file" accept="image/png, image/jpeg" onChange={handleSubmit}/> 
         {loading ? 
             <div>
-                <button onClick={onAbort}>Cancel</button>
                 <LoadingSpinner/>
             </div>: <div/>}
     </div>)
