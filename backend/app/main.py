@@ -5,6 +5,7 @@ from .omr import parse_musicxml, extract_measure_bboxes
 import os, argparse
 from oemer.ete import extract
 from oemer import layers
+import cv2
 
 
 app = FastAPI()
@@ -47,17 +48,20 @@ async def annotate(file: UploadFile = File(...)):
     xmlpath = os.path.join(UPLOAD_DIR, f"{basename}.musicxml")
     result = parse_musicxml(xmlpath)
 
-    img = layers.get_layer('original_image')
+    dewarped = layers.get_layer('original_image')
     staffs = layers.get_layer('staffs')
     barlines = layers.get_layer('barlines').tolist()
     num_groups = staffs.tolist()[0][-1].group + 1
 
-    bbox_coords = extract_measure_bboxes(num_groups, staffs, barlines, img.shape[1])
+    bbox_coords = extract_measure_bboxes(num_groups, staffs, barlines, dewarped.shape[1])
     
     # attach bboxes to measures
     for measure, bbox in zip(result['measures'], bbox_coords):
         x1, y1, x2, y2 = bbox
         measure['bbox'] = {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)}
 
-    result['img_url'] = f"/uploads/{fname}"
+    dewarped_path = os.path.join(UPLOAD_DIR, f"{basename}_dewarped.png")
+    cv2.imwrite(dewarped_path, dewarped)
+
+    result['img_url'] = f"/uploads/{basename}_dewarped.png"
     return result
