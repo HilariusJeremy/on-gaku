@@ -1,8 +1,8 @@
 import type { Measure } from "../App"
 
-const Sidebar = ({selectedMeasure}: {selectedMeasure: Measure}) => {
+const Sidebar = ({selectedMeasure}: {selectedMeasure: Measure | null}) => {
     console.log(selectedMeasure)
-    if (!selectedMeasure) return
+    if (!selectedMeasure) return <p>Click a measure</p>
     return (
     <div>
         <h1>
