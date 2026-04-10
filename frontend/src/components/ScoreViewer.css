@@ -1,6 +1,9 @@
 .score-viewer {
     position: relative;
-    max-width: 100%;
+    width: 100%;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
 }
 
 .sheet-img {
