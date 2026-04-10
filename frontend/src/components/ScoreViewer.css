@@ -1,0 +1,18 @@
+.score-viewer {
+    position: relative;
+    max-width: 100%;
+}
+
+.sheet-img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* x1: 1775, y1: 536, x2: 2227, y2: 827} */
+.bbox {
+    position: absolute;
+}
+
+.bbox:hover {
+    background-color: rgba(0, 255, 0, 0.2);
+}
