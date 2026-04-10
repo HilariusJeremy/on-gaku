@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from .omr import parse_musicxml, extract_measure_bboxes
+from .omr import parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures
 import os, argparse
 from oemer.ete import extract
 from oemer import layers
@@ -42,7 +42,10 @@ async def annotate(file: UploadFile = File(...)):
                                 use_tf=False, 
                                 save_cache=True,
                                 without_deskew=False)
-    extract(args)
+    try:
+        extract(args)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"OMR processing failed: {str(e)}")
 
     basename = os.path.splitext(fname)[0]
     xmlpath = os.path.join(UPLOAD_DIR, f"{basename}.musicxml")
@@ -60,8 +63,19 @@ async def annotate(file: UploadFile = File(...)):
         x1, y1, x2, y2 = bbox
         measure['bbox'] = {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)}
 
+    # Link notes with its bounding box
+    notes = layers.get_layer('notes')
+    result = link_noteheads_to_measures(result, notes)
+    print(result)
+
     dewarped_path = os.path.join(UPLOAD_DIR, f"{basename}_dewarped.png")
     cv2.imwrite(dewarped_path, dewarped)
 
+    print(xmlpath)
+    print(os.path.exists(xmlpath))
+
     result['img_url'] = f"/uploads/{basename}_dewarped.png"
     return result
+
+
+    

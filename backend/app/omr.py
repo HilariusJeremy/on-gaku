@@ -114,3 +114,50 @@ def extract_measure_bboxes(num_groups, staffs, barlines, img_width):
             
         bbox_coords.extend(group_bboxes[:-1])  # drop the last (empty trailing space)
     return bbox_coords
+
+def large_bbox_contains_small_bbox(large_bbox, small_bbox):
+        return (
+            (large_bbox['x1'] <= small_bbox['x1'] <= large_bbox['x2']) and 
+            (large_bbox['y1'] <= small_bbox['y1'] <= large_bbox['y2'])
+        )
+
+def link_noteheads_to_measures(result, notes_layer):
+    notes_treble_bbox = []
+    notes_bass_bbox = []
+    for note in notes_layer.tolist():
+        if note.track==1:	
+            x1, y1, x2, y2 = note.bbox
+            notes_bass_bbox.append({'id': note.id, 'bbox': {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)}})
+        else:
+            x1, y1, x2, y2 = note.bbox
+            notes_treble_bbox.append({'id': note.id, 'bbox': {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)}})
+    notes_treble_bbox = sorted(notes_treble_bbox, key=lambda note: (note['bbox']['x1'], note['bbox']['y1']))
+    notes_bass_bbox = sorted(notes_bass_bbox, key=lambda note: (note['bbox']['x1'], note['bbox']['y1']))
+
+    # Loop through all the measures to include all notes in the measure IF the note bounding box is in measure bounding box
+    # large_bbox contains small_bbox
+
+    for measure in result['measures']:
+        measure_treble_notes = []
+        measure_bass_notes = []
+
+        for note_bass in notes_bass_bbox:
+            if large_bbox_contains_small_bbox(measure['bbox'], note_bass['bbox']):
+                measure_bass_notes.append(note_bass)
+
+        for note_treble in notes_treble_bbox:
+            if large_bbox_contains_small_bbox(measure['bbox'], note_treble['bbox']):
+                measure_treble_notes.append(note_treble)
+
+        if measure['bass'] != ['rest']:
+            measure['bass'] = [
+                {'pitch': pitch, 'bbox': note['bbox'], 'id': note['id']}
+                for pitch, note in zip(measure['bass'], measure_bass_notes)
+            ]
+
+        if measure['treble'] != ['rest']:
+            measure['treble'] = [
+                {'pitch': pitch, 'bbox': note['bbox'], 'id': note['id']}
+                for pitch, note in zip(measure['treble'], measure_treble_notes)
+            ]
+    return result
