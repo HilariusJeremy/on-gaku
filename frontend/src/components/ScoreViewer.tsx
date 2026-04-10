@@ -8,6 +8,12 @@ const ScoreViewer = ({result, onSelectedMeasure}: {result: AnnotationData|null, 
     const [scale, setScale] = useState(1)
     const imgRef = useRef<HTMLImageElement>(null)
 
+    const handleLoad = () => {
+        if (!imgRef.current) return
+        setScale(imgRef.current.getBoundingClientRect().width / imgRef.current.naturalWidth)
+        console.log(imgRef.current.getBoundingClientRect().width)
+    }
+
     useEffect(() => {
     if (!imgRef.current) return
     if (imgRef.current.complete) {
@@ -29,18 +35,12 @@ const ScoreViewer = ({result, onSelectedMeasure}: {result: AnnotationData|null, 
             onClick={() => onSelectedMeasure(measure)}
             ></div>)
 
-    const handleLoad = () => {
-        if (!imgRef.current) return
-        setScale(imgRef.current.getBoundingClientRect().width / imgRef.current.naturalWidth)
-    }
+
 
     return (
-        <div>
-            <h1>ScoreViewer</h1>
-            <div className='score-viewer'>
-                <img className='sheet-img' onLoad={handleLoad} src={result['img_url']} ref={imgRef}/>
-                {measure_bbox}
-            </div>
+        <div className='score-viewer'>
+            <img className='sheet-img' onLoad={handleLoad} src={result['img_url']} ref={imgRef}/>
+            {measure_bbox}
         </div>
     )
 }
