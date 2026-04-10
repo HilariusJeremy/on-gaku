@@ -4,7 +4,7 @@ const Sidebar = ({selectedMeasure}: {selectedMeasure: Measure | null}) => {
     console.log(selectedMeasure)
     if (!selectedMeasure) return <p>Click a measure</p>
     return (
-    <div>
+    <div className="sidebar">
         <h1>
             Sidebar
         </h1>
