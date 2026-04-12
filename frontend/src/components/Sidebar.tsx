@@ -1,8 +1,9 @@
-import type { Measure } from "../App"
+import './Sidebar.css'
+import type { Measure, Note } from "../App"
 
-const Sidebar = ({selectedMeasure}: {selectedMeasure: Measure | null}) => {
-
-    if (!selectedMeasure) return <p>Click a measure</p>
+const Sidebar = ({selectedMeasure, selectedNote, onSelectedNote}: 
+    {selectedMeasure: Measure | null, selectedNote: Note | null, onSelectedNote: (note: Note, measure: Measure) => void}) => {
+    if (!selectedMeasure) return <p className='sidebar'>Click a measure or a note!</p>
     return (
     <div className="sidebar">
         <h1>
@@ -10,19 +11,29 @@ const Sidebar = ({selectedMeasure}: {selectedMeasure: Measure | null}) => {
         </h1>
         <p>Treble</p>    
         <ul>
-                {selectedMeasure.bass.map((note, index) => 
-    typeof note === 'string' 
-        ? <li key={index}>{note}</li>
-        : <li key={index}>{note.pitch}</li>
-)}
+            {selectedMeasure.treble.filter(note => typeof note !== 'string').map((note) => 
+                <div>
+                    <button key={note.id} onClick={() => onSelectedNote(note, selectedMeasure)}>
+                        {note.pitch}
+                    </button>
+                    { selectedNote?.id===note.id && <p>{note.pitch}</p> }
+                    
+                </div>
+            )}
+
         </ul>
         <p> Bass</p>
         <ul>
-                {selectedMeasure.bass.map((note, index) => 
-    typeof note === 'string' 
-        ? <li key={index}>{note}</li>
-        : <li key={index}>{note.pitch}</li>
-)}
+            {selectedMeasure.bass.filter(note => typeof note !== 'string').map((note) => 
+                <div>
+                    <button key={note.id} onClick={() => onSelectedNote(note, selectedMeasure)}>
+                        {note.pitch}
+                    </button>
+                    { selectedNote?.id===note.id && <p>{note.pitch}</p> }
+                    
+                </div>
+            )}
+
         </ul>
     </div>
     )

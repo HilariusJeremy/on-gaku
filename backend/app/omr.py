@@ -148,7 +148,6 @@ def link_noteheads_to_measures(result, notes_layer):
         for note_treble in notes_treble_bbox:
             if large_bbox_contains_small_bbox(measure['bbox'], note_treble['bbox']):
                 measure_treble_notes.append(note_treble)
-
         if measure['bass'] != ['rest']:
             measure['bass'] = [
                 {'pitch': pitch, 'bbox': note['bbox'], 'id': note['id']}

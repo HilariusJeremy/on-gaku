@@ -64,7 +64,7 @@ async def annotate(file: UploadFile = File(...)):
     # Link notes with its bounding box
     notes = layers.get_layer('notes')
     result = link_noteheads_to_measures(result, notes)
-
+    
     dewarped_path = os.path.join(UPLOAD_DIR, f"{basename}_dewarped.png")
     cv2.imwrite(dewarped_path, dewarped)
 
