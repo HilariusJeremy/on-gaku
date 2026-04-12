@@ -11,11 +11,23 @@
     height: auto;
 }
 
-/* x1: 1775, y1: 536, x2: 2227, y2: 827} */
-.bbox {
+
+.measure-bbox {
     position: absolute;
+    background-color: transparent;
+    z-index: 1;
 }
 
-.bbox:hover {
+.measure-bbox:hover {
     background-color: rgba(0, 255, 0, 0.2);
+}
+
+.note-bbox {
+    position: absolute;
+    background-color: transparent;
+    z-index: 2;
+}
+
+.note-bbox:hover {
+    background-color: rgba(255, 174, 0, 0.5);
 }

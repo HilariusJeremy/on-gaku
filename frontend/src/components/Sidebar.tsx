@@ -1,7 +1,7 @@
 import type { Measure } from "../App"
 
 const Sidebar = ({selectedMeasure}: {selectedMeasure: Measure | null}) => {
-    console.log(selectedMeasure)
+
     if (!selectedMeasure) return <p>Click a measure</p>
     return (
     <div className="sidebar">
@@ -10,11 +10,19 @@ const Sidebar = ({selectedMeasure}: {selectedMeasure: Measure | null}) => {
         </h1>
         <p>Treble</p>    
         <ul>
-                {selectedMeasure.treble.map((note, index) => <li key={index}>{note}</li>)}
+                {selectedMeasure.bass.map((note, index) => 
+    typeof note === 'string' 
+        ? <li key={index}>{note}</li>
+        : <li key={index}>{note.pitch}</li>
+)}
         </ul>
         <p> Bass</p>
         <ul>
-                {selectedMeasure.bass.map((note, index) => <li key={index}>{note}</li>)}
+                {selectedMeasure.bass.map((note, index) => 
+    typeof note === 'string' 
+        ? <li key={index}>{note}</li>
+        : <li key={index}>{note.pitch}</li>
+)}
         </ul>
     </div>
     )

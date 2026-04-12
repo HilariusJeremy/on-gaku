@@ -30,8 +30,6 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 async def annotate(file: UploadFile = File(...)):
     if file.content_type not in ["image/png", "image/jpeg"]:
         raise HTTPException(status_code=400, detail="Only PNG and JPEG supported.")
-    print(file.filename)
-    print(file.content_type)
     fname = file.filename
     fdst_path = os.path.join(UPLOAD_DIR, fname)
     contents = await file.read()
@@ -66,13 +64,9 @@ async def annotate(file: UploadFile = File(...)):
     # Link notes with its bounding box
     notes = layers.get_layer('notes')
     result = link_noteheads_to_measures(result, notes)
-    print(result)
 
     dewarped_path = os.path.join(UPLOAD_DIR, f"{basename}_dewarped.png")
     cv2.imwrite(dewarped_path, dewarped)
-
-    print(xmlpath)
-    print(os.path.exists(xmlpath))
 
     result['img_url'] = f"/uploads/{basename}_dewarped.png"
     return result
