@@ -1,7 +1,8 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from .omr import parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures
+
+from .omr import parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures, extract_notes_from_oemer
 import os, argparse
 from oemer.ete import extract
 from oemer import layers
@@ -62,7 +63,8 @@ async def annotate(file: UploadFile = File(...)):
         measure['bbox'] = {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)}
 
     # Link notes with its bounding box
-    notes = layers.get_layer('notes')
+    notes_layer = layers.get_layer('notes')
+    notes = extract_notes_from_oemer(notes_layer)
     result = link_noteheads_to_measures(result, notes)
     
     dewarped_path = os.path.join(UPLOAD_DIR, f"{basename}_dewarped.png")

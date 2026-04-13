@@ -40,8 +40,7 @@ const ScoreViewer = ({result, onSelectedMeasure, onSelectedNote, selectedMeasure
             ></div>)
 
     const noteheads = measures.flatMap((measure) => [
-        ...measure.treble.filter(note => typeof note !== 'string').map(note => ({note, measure})),
-        ...measure.bass.filter(note => typeof note !== 'string').map(note => ({note, measure})),
+        ...measure.notes.filter(note => typeof note !== 'string').map(note => ({note, measure})),
     ])
 
     const note_bbox = noteheads.map(({note, measure}) => 

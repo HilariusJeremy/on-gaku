@@ -9,31 +9,27 @@ const Sidebar = ({selectedMeasure, selectedNote, onSelectedNote}:
         <h1>
             Sidebar
         </h1>
-        <p>Treble</p>    
+        <p>Treble</p>
         <ul>
-            {selectedMeasure.treble.filter(note => typeof note !== 'string').map((note) => 
-                <div>
-                    <button key={note.id} onClick={() => onSelectedNote(note, selectedMeasure)}>
-                        {note.pitch}
-                    </button>
-                    { selectedNote?.id===note.id && <p>{note.pitch}</p> }
-                    
-                </div>
-            )}
-
+        {selectedMeasure.notes.filter(n => n.track === 0).map((note) =>
+            <div key={note.id}>
+            <button onClick={() => onSelectedNote(note, selectedMeasure)}>
+                {note.pitch}
+            </button>
+            {selectedNote?.id === note.id && <p>{note.pitch}</p>}
+            </div>
+        )}
         </ul>
-        <p> Bass</p>
+        <p>Bass</p>
         <ul>
-            {selectedMeasure.bass.filter(note => typeof note !== 'string').map((note) => 
-                <div>
-                    <button key={note.id} onClick={() => onSelectedNote(note, selectedMeasure)}>
-                        {note.pitch}
-                    </button>
-                    { selectedNote?.id===note.id && <p>{note.pitch}</p> }
-                    
-                </div>
-            )}
-
+        {selectedMeasure.notes.filter(n => n.track === 1).map((note) =>
+            <div key={note.id}>
+            <button onClick={() => onSelectedNote(note, selectedMeasure)}>
+                {note.pitch}
+            </button>
+            {selectedNote?.id === note.id && <p>{note.pitch}</p>}
+            </div>
+        )}
         </ul>
     </div>
     )
