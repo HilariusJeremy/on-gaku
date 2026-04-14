@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import cv2
 
 def parse_musicxml(filepath: str) -> dict:
     tree = ET.parse(filepath)
@@ -93,6 +94,7 @@ def extract_measure_bboxes(num_groups, staffs, barlines, img_width):
     barlines = sorted(barlines, key=lambda barline: (barline.group, barline.bbox[0]))
     bbox_coords = []
     for group in range(num_groups):
+        y_upper, y_lower = None, None
         for staff in staffs.tolist()[0]:
             if staff.group == group:
                 if staff.track == 0:
@@ -158,3 +160,23 @@ def link_noteheads_to_measures(result, notes):
             if large_bbox_contains_small_bbox(measure['bbox'], note['bbox'])
         ]
     return result
+
+def render_annotated_image(result, img):
+    for measure in result['measures']:
+        for note in measure['notes']:
+            bbox = note['bbox']
+            notehead_width = bbox['x2'] - bbox['x1']
+            notehead_height = bbox['y2'] - bbox['y1']
+            
+            # Scale font size proportionally to notehead size
+            # Adjust the divisor (50) based on your preferred scale
+            font_scale = max(notehead_width, notehead_height) / 25
+            
+            x = bbox['x2'] + 10
+            y = bbox['y2']
+            
+            pitch_label = note['pitch'].replace('♭', 'b').replace('♯', '#')
+
+            cv2.putText(img, pitch_label, (x, y),
+                       cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), 2)
+    return img

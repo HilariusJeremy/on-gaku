@@ -1,8 +1,10 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-from .omr import parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures, extract_notes_from_oemer
+from .omr import (parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures, 
+                  extract_notes_from_oemer, render_annotated_image)
 import os, argparse
 from oemer.ete import extract
 from oemer import layers
@@ -29,6 +31,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.post("/annotate")
 async def annotate(file: UploadFile = File(...)):
+    global last_result, last_img, last_filename
     if file.content_type not in ["image/png", "image/jpeg"]:
         raise HTTPException(status_code=400, detail="Only PNG and JPEG supported.")
     fname = file.filename
@@ -71,7 +74,20 @@ async def annotate(file: UploadFile = File(...)):
     cv2.imwrite(dewarped_path, dewarped)
 
     result['img_url'] = f"/uploads/{basename}_dewarped.png"
+    last_result = result
+    last_img = dewarped
+    last_filename = basename
+
     return result
 
 
+@app.get("/export")
+async def export():
+    if last_result is None or last_img is None:
+        raise HTTPException(status_code=400, detail="No annotation to export. Run /annotate first.")
+    annotated = render_annotated_image(last_result, last_img.copy())
+    export_path = os.path.join(UPLOAD_DIR, 'annotated.png')
+    cv2.imwrite(export_path, annotated)
+    return FileResponse(export_path, media_type='image/png', filename=f'{last_filename}_annotated.png')
     
+
