@@ -178,5 +178,5 @@ def render_annotated_image(result, img):
             pitch_label = note['pitch'].replace('♭', 'b').replace('♯', '#')
 
             cv2.putText(img, pitch_label, (x, y),
-                       cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), 2)
+                       cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), 2)
     return img
