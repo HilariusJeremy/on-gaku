@@ -66,6 +66,9 @@ const UploadPage = ({onResult}: {onResult: (data: AnnotationData) => void}) => {
                 <p className="text-[#9cd768] font-[Manrope] text-xs tracking-widest">
                     PNG · JPEG · PDF
                 </p>
+                <p className="text-[#9cd768] font-[Manrope] text-xs tracking-widest text-center py-2">
+                    © 2026 Hilarius Jeremy I. L.
+                </p>
             </div>
         </div>
     )
