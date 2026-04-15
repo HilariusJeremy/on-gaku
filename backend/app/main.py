@@ -39,6 +39,7 @@ def process_image(fdst_path, basename):
     extract(args)
     xmlpath = os.path.join(UPLOAD_DIR, f"{basename}.musicxml")
     result = parse_musicxml(xmlpath)
+
     dewarped = layers.get_layer('original_image')
     
     staffs = layers.get_layer('staffs')
@@ -47,14 +48,19 @@ def process_image(fdst_path, basename):
     barlines = layers.get_layer('barlines').tolist()
     num_groups = staffs.tolist()[0][-1].group + 1
     bbox_coords = extract_measure_bboxes(num_groups, staffs, barlines, dewarped.shape[1])
+    result['measures'] = [{'number': i+1} for i in range(len(bbox_coords))]
+    
     for measure, bbox in zip(result['measures'], bbox_coords):
         x1, y1, x2, y2 = bbox
         measure['bbox'] = {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)}
+
     notes = extract_notes_from_oemer(layers.get_layer('notes'))
     result = link_noteheads_to_measures(result, notes, unit_staff_size, dewarped.shape[0])
+    
     dewarped_path = os.path.join(UPLOAD_DIR, f"{basename}_dewarped.png")
     cv2.imwrite(dewarped_path, dewarped)
     result['img_url'] = f"/uploads/{basename}_dewarped.png"
+    
     return result, dewarped
 
 
@@ -81,6 +87,7 @@ async def annotate(file: UploadFile = File(...)):
             page_path = os.path.join(UPLOAD_DIR, f"{page_basename}.png")
             cv2.imwrite(page_path, np_array)
             result, dewarped = process_image(page_path, page_basename)
+
             all_results.append(result)
         last_result = all_results
         last_img = dewarped
