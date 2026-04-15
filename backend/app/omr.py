@@ -170,7 +170,7 @@ def link_noteheads_to_measures(result, notes, unit_staff_size, img_height, scale
         ]
     return result
 
-def render_annotated_image(result, img):
+def render_annotated_image(result, img, unit_staff_size):
     for measure in result['measures']:
         for note in measure['notes']:
             bbox = note['bbox']
@@ -179,13 +179,13 @@ def render_annotated_image(result, img):
             
             # Scale font size proportionally to notehead size
             # Adjust the divisor (50) based on your preferred scale
-            font_scale = max(notehead_width, notehead_height) / 25
+            font_scale = unit_staff_size / 15
             
-            x = bbox['x2'] + 10
+            x = bbox['x2'] + unit_staff_size / 2
             y = bbox['y2']
             
             pitch_label = note['pitch'].replace('♭', 'b').replace('♯', '#')
 
-            cv2.putText(img, pitch_label, (x, y),
-                       cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), 2)
+            cv2.putText(img, pitch_label, (int(x),int(y)),
+                       cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), 1)
     return img

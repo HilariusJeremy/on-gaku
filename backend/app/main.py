@@ -29,6 +29,9 @@ app.add_middleware(
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+last_result = None
+last_img = None
+last_filename = None
 
 def process_image(fdst_path, basename):
     args = argparse.Namespace(
@@ -77,14 +80,18 @@ async def annotate(file: UploadFile = File(...)):
             page_basename = f"{basename}_page{page_index}"
             page_path = os.path.join(UPLOAD_DIR, f"{page_basename}.png")
             cv2.imwrite(page_path, np_array)
-            result, _ = process_image(page_path, page_basename)
+            result, dewarped = process_image(page_path, page_basename)
             all_results.append(result)
         last_result = all_results
+        last_img = dewarped
+        last_filename = page_basename
         return all_results
 
     else:
-        result, _ = process_image(fdst_path, basename)
+        result, dewarped = process_image(fdst_path, basename)
         last_result = [result]
+        last_img = dewarped
+        last_filename = basename
         return [result]
 
 
@@ -92,7 +99,9 @@ async def annotate(file: UploadFile = File(...)):
 async def export():
     if last_result is None or last_img is None:
         raise HTTPException(status_code=400, detail="No annotation to export. Run /annotate first.")
-    annotated = render_annotated_image(last_result[-1], last_img.copy())
+    staffs = layers.get_layer('staffs')
+    unit_staff_size = staffs.tolist()[0][0].unit_size
+    annotated = render_annotated_image(last_result[-1], last_img.copy(), unit_staff_size)
     export_path = os.path.join(UPLOAD_DIR, 'annotated.png')
     cv2.imwrite(export_path, annotated)
     return FileResponse(export_path, media_type='image/png', filename=f'{last_filename}_annotated.png')
