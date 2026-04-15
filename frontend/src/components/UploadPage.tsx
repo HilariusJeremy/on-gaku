@@ -17,7 +17,7 @@ const UploadPage = ({onResult}: {onResult: (data: AnnotationData) => void}) => {
             .then(res => res.json())
             .then(
                 data => {
-                    onResult(data)
+                    onResult(data[0])
                     setLoading(false)
                 }
                 
@@ -27,7 +27,7 @@ const UploadPage = ({onResult}: {onResult: (data: AnnotationData) => void}) => {
     return (
     <div>
         <h1>Upload Page</h1>
-        <input type="file" accept="image/png, image/jpeg" onChange={handleSubmit}/> 
+        <input type="file" accept="image/png, image/jpeg, application/pdf" onChange={handleSubmit}/> 
         {loading ? 
             <div>
                 <LoadingSpinner/>

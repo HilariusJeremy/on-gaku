@@ -153,11 +153,20 @@ def extract_notes_from_oemer(notes_layer) -> list[dict]:
     output.sort(key=lambda note: (note['bbox']['x1'], note['bbox']['y1']))
     return output
 
-def link_noteheads_to_measures(result, notes):
+def link_noteheads_to_measures(result, notes, unit_staff_size, img_height, scale=4):
     for measure in result['measures']:
+        expanded_bbox = {
+            'x1': measure['bbox']['x1'],
+            'x2': measure['bbox']['x2'],
+            'y1': max(0, measure['bbox']['y1'] - scale * unit_staff_size),
+            'y2': min(img_height, measure['bbox']['y2'] + scale * unit_staff_size)
+        }
+
+        measure['bbox'] = expanded_bbox
+
         measure['notes'] = [
             note for note in notes
-            if large_bbox_contains_small_bbox(measure['bbox'], note['bbox'])
+            if large_bbox_contains_small_bbox(expanded_bbox, note['bbox'])
         ]
     return result
 

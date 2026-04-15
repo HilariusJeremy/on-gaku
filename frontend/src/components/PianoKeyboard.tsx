@@ -25,12 +25,12 @@ const PianoKeyboard = ({ pitch }: PianoKeyboardProps) => {
         {/* White keys */}
         {WHITE_KEYS.map((key) => (
           <rect key={key} x={WHITE_X[key]} y="2" width="4" height="30"
-            fill={!isBlack && noteName === key ? '#4ade80' : '#eee'} />
+            fill={!isBlack && noteName === key ? '#57803d' : '#eee'} />
         ))}
         {/* Black keys */}
         {Object.entries(BLACK_KEYS).filter(([k]) => !k.includes('b') || k === 'Bb').map(([key, x]) => (
           <rect key={key} x={x} y="2" width="2.5" height="20"
-            fill={isBlack && noteName === key ? '#4ade80' : '#111'} />
+            fill={isBlack && noteName === key ? '#57803d' : '#111'} />
         ))}
       </g>
     </svg>

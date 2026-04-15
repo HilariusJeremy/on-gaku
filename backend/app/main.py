@@ -2,6 +2,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+import pymupdf, numpy as np
 
 from .omr import (parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures, 
                   extract_notes_from_oemer, render_annotated_image)
@@ -29,56 +30,62 @@ app.add_middleware(
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@app.post("/annotate")
-async def annotate(file: UploadFile = File(...)):
-    global last_result, last_img, last_filename
-    if file.content_type not in ["image/png", "image/jpeg"]:
-        raise HTTPException(status_code=400, detail="Only PNG and JPEG supported.")
-    fname = file.filename
-    fdst_path = os.path.join(UPLOAD_DIR, fname)
-    contents = await file.read()
-    with open(fdst_path, 'wb') as fdst:
-        fdst.write(contents)
-    args = argparse.Namespace(img_path=fdst_path, 
-                                output_path=UPLOAD_DIR, 
-                                use_tf=False, 
-                                save_cache=True,
-                                without_deskew=False)
-    try:
-        extract(args)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"OMR processing failed: {str(e)}")
-
-    basename = os.path.splitext(fname)[0]
+def process_image(fdst_path, basename):
+    args = argparse.Namespace(
+        img_path=fdst_path, output_path=UPLOAD_DIR, use_tf=False, save_cache=True, without_deskew=False)
+    extract(args)
     xmlpath = os.path.join(UPLOAD_DIR, f"{basename}.musicxml")
     result = parse_musicxml(xmlpath)
-
     dewarped = layers.get_layer('original_image')
+    
     staffs = layers.get_layer('staffs')
+    unit_staff_size = staffs.tolist()[0][0].unit_size
+
     barlines = layers.get_layer('barlines').tolist()
     num_groups = staffs.tolist()[0][-1].group + 1
-
     bbox_coords = extract_measure_bboxes(num_groups, staffs, barlines, dewarped.shape[1])
-    
-    # attach bboxes to measures
     for measure, bbox in zip(result['measures'], bbox_coords):
         x1, y1, x2, y2 = bbox
         measure['bbox'] = {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)}
-
-    # Link notes with its bounding box
-    notes_layer = layers.get_layer('notes')
-    notes = extract_notes_from_oemer(notes_layer)
-    result = link_noteheads_to_measures(result, notes)
-    
+    notes = extract_notes_from_oemer(layers.get_layer('notes'))
+    result = link_noteheads_to_measures(result, notes, unit_staff_size, dewarped.shape[0])
     dewarped_path = os.path.join(UPLOAD_DIR, f"{basename}_dewarped.png")
     cv2.imwrite(dewarped_path, dewarped)
-
     result['img_url'] = f"/uploads/{basename}_dewarped.png"
-    last_result = result
-    last_img = dewarped
-    last_filename = basename
+    return result, dewarped
 
-    return result
+
+@app.post("/annotate")
+async def annotate(file: UploadFile = File(...)):
+    global last_result, last_img, last_filename
+    if file.content_type not in ["image/png", "image/jpeg", "application/pdf"]:
+        raise HTTPException(status_code=400, detail="Only PNG, JPEG, and PDF supported.")
+    
+    fname = file.filename
+    basename = os.path.splitext(fname)[0]
+    fdst_path = os.path.join(UPLOAD_DIR, fname)
+    contents = await file.read()
+    with open(fdst_path, 'wb') as fdst:
+            fdst.write(contents)
+
+    if file.content_type == "application/pdf":
+        doc = pymupdf.open(fdst_path)
+        all_results = []
+        for page_index, page in enumerate(doc): # iterate over pdf pages
+            pix = page.get_pixmap(matrix=pymupdf.Matrix(2,2)) # zoom for better image resolution
+            np_array = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, pix.n) # convert to numpy array
+            page_basename = f"{basename}_page{page_index}"
+            page_path = os.path.join(UPLOAD_DIR, f"{page_basename}.png")
+            cv2.imwrite(page_path, np_array)
+            result, _ = process_image(page_path, page_basename)
+            all_results.append(result)
+        last_result = all_results
+        return all_results
+
+    else:
+        result, _ = process_image(fdst_path, basename)
+        last_result = [result]
+        return [result]
 
 
 @app.get("/export")
