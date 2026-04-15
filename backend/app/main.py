@@ -92,7 +92,7 @@ async def annotate(file: UploadFile = File(...)):
 async def export():
     if last_result is None or last_img is None:
         raise HTTPException(status_code=400, detail="No annotation to export. Run /annotate first.")
-    annotated = render_annotated_image(last_result, last_img.copy())
+    annotated = render_annotated_image(last_result[-1], last_img.copy())
     export_path = os.path.join(UPLOAD_DIR, 'annotated.png')
     cv2.imwrite(export_path, annotated)
     return FileResponse(export_path, media_type='image/png', filename=f'{last_filename}_annotated.png')
