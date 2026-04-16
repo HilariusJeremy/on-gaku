@@ -13,6 +13,8 @@ import cv2
 
 
 app = FastAPI()
+
+os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 origins = [
