@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import cv2
 from oemer.build_system import Measure
 from oemer import layers
+from oemer.symbol_extraction import SfnType, ClefType
 
 def parse_musicxml(filepath: str) -> dict:
     tree = ET.parse(filepath)
@@ -124,34 +125,68 @@ def large_bbox_contains_small_bbox(large_bbox, small_bbox):
             (large_bbox['y1'] <= small_bbox['y1'] <= large_bbox['y2'])
         )
 
-def extract_notes_from_oemer(notes_layer) -> list[dict]:
+def extract_notes_from_oemer(notes_layer, clefs_layer) -> list[dict]:
+    
     output = []
+    
+    # Build a map of clef changes by track: {track: [(x_center, clef_type), ...]}
+    clef_map = {}
+    for clef in clefs_layer.tolist():
+        if clef.track not in clef_map:
+            clef_map[clef.track] = []
+        clef_map[clef.track].append((clef.x_center, clef.label))
+    
+    # Sort clef changes by x position for each track
+    for track in clef_map:
+        clef_map[track].sort(key=lambda c: c[0])
+    
+    # Define pitch mappings
+    G_CLEF_POS_TO_PITCH = ['D', 'E', 'F', 'G', 'A', 'B', 'C']
+    F_CLEF_POS_TO_PITCH = ['F', 'G', 'A', 'B', 'C', 'D', 'E']
+    
     for note in notes_layer.tolist():
-        clef_type = 'G_CLEF' if note.track == 0 else 'F_CLEF'
+        # Determine which clef is active at this note's position
+        current_clef = None
+        if note.track in clef_map:
+            for x_pos, clef_type in clef_map[note.track]:
+                if x_pos <= note.bbox[0]:  # Find the last clef before or at this note
+                    current_clef = clef_type
+                else:
+                    break
+        
+        # Default clef if none found
+        if current_clef is None:
+            current_clef = ClefType.G_CLEF if note.track == 0 else ClefType.F_CLEF
+        
+        # Calculate pitch using the correct clef
         pos = int(note.staff_line_pos)
-        order = ['D', 'E', 'F', 'G', 'A', 'B', 'C'] if clef_type == 'G_CLEF' else ['F', 'G', 'A', 'B', 'C', 'D', 'E']
-
+        if current_clef == ClefType.G_CLEF:
+            order = G_CLEF_POS_TO_PITCH
+            octave_offset = 4
+            pitch_offset = 1
+        else:
+            order = F_CLEF_POS_TO_PITCH
+            octave_offset = 2
+            pitch_offset = 3
+        
         note_name = order[pos % 7] if pos >= 0 else order[pos % -7]
-        octave_offset = 4 if clef_type == 'G_CLEF' else 2
-        pitch_offset = 1 if clef_type == 'G_CLEF' else 3
         octave = (pos + pitch_offset) // 7 + octave_offset
         
         # Handle accidentals
         accidental = 0
         if note.sfn:
-            from oemer.symbol_extraction import SfnType
             if note.sfn == SfnType.SHARP:
                 accidental = 1
             elif note.sfn == SfnType.FLAT:
                 accidental = -1
         
         output.append({
-        'id': note.id,
-        'pitch': f"{note_name}{octave}{'#' if accidental==1 else '♭' if accidental==-1 else ''}",
-        'bbox': {'x1': int(note.bbox[0]), 'y1': int(note.bbox[1]), 'x2': int(note.bbox[2]), 'y2': int(note.bbox[3])},
-        'track': note.track,
-    })
-        
+            'id': note.id,
+            'pitch': f"{note_name}{octave}{'#' if accidental==1 else '♭' if accidental==-1 else ''}",
+            'bbox': {'x1': int(note.bbox[0]), 'y1': int(note.bbox[1]), 'x2': int(note.bbox[2]), 'y2': int(note.bbox[3])},
+            'track': note.track,
+        })
+    
     output.sort(key=lambda note: (note['bbox']['x1'], note['bbox']['y1']))
     return output
 

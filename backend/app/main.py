@@ -60,7 +60,8 @@ def process_image(fdst_path, basename):
         x1, y1, x2, y2 = bbox
         measure['bbox'] = {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)}
 
-    notes = extract_notes_from_oemer(layers.get_layer('notes'))
+    clefs = layers.get_layer('clefs')
+    notes = extract_notes_from_oemer(layers.get_layer('notes'), clefs)
     result = link_noteheads_to_measures(result, notes, unit_staff_size, dewarped.shape[0])
     result['measures'] = [m for m in result['measures'] if len(m.get('notes', [])) > 0]
     
