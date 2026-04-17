@@ -7,7 +7,7 @@ import pymupdf, numpy as np
 from .omr import (extract_key_from_oemer, parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures, 
                   extract_notes_from_oemer, render_annotated_image)
 import os, argparse
-from oemer.ete import extract
+from oemer.ete import extract, clear_data
 from oemer import layers
 import cv2
 
@@ -36,9 +36,13 @@ last_img = None
 last_filename = None
 
 def process_image(fdst_path, basename):
+    clear_data()
+    
     args = argparse.Namespace(
         img_path=fdst_path, output_path=UPLOAD_DIR, use_tf=False, save_cache=True, without_deskew=False)
     extract(args)
+    print(f"Processing: {fdst_path}")
+    print(f"PKL would be: {os.path.splitext(fdst_path)[0]}.pkl")
     xmlpath = os.path.join(UPLOAD_DIR, f"{basename}.musicxml")
     result = {"key": extract_key_from_oemer()}
 
