@@ -18,7 +18,7 @@ const Sidebar = ({selectedMeasure, selectedNote, onSelectedNote}:
                     <div key={note.id} className="flex flex-col">
                         <button 
                             onClick={() => onSelectedNote(note, selectedMeasure)}
-                            className={`text-left px-3 py-2 font-[Manrope] text-sm tracking-wider transition-all
+                            className={`cursor-pointer text-left px-3 py-2 font-[Manrope] text-sm tracking-wider transition-all
                                 ${selectedNote?.id === note.id 
                                     ? 'text-[#9cd768] bg-[#253a25]' 
                                     : 'text-[#e6c365]/70 hover:text-[#e6c365] hover:bg-[#253a25]/50'}`}>
@@ -38,7 +38,7 @@ const Sidebar = ({selectedMeasure, selectedNote, onSelectedNote}:
                     <div key={note.id} className="flex flex-col">
                         <button 
                             onClick={() => onSelectedNote(note, selectedMeasure)}
-                            className={`text-left px-3 py-2 font-[Manrope] text-sm tracking-wider transition-all
+                            className={`cursor-pointer text-left px-3 py-2 font-[Manrope] text-sm tracking-wider transition-all
                                 ${selectedNote?.id === note.id 
                                     ? 'text-[#9cd768] bg-[#253a25]' 
                                     : 'text-[#e6c365]/70 hover:text-[#e6c365] hover:bg-[#253a25]/50'}`}>

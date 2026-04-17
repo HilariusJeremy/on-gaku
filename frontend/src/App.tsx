@@ -92,12 +92,12 @@ URL.revokeObjectURL(blobUrl);
         <h1 className="text-2xl text-[#e6c365] font-serif tracking-widest">音楽</h1>
         <div className="flex gap-4">
             <button onClick={() => setResult(null)}
-                className="text-[#e6c365]/60 font-[Manrope] text-xs tracking-widest uppercase 
+                className="cursor-pointer text-[#e6c365]/60 font-[Manrope] text-xs tracking-widest uppercase 
                 hover:text-[#e6c365] transition-colors border border-[#e6c365]/20 px-4 py-2">
                 New Upload
             </button>
             <button onClick={handleExport}
-                className="bg-gradient-to-r from-[#e6c365] to-[#ac8d35] text-[#041706] 
+                className="cursor-pointer bg-gradient-to-r from-[#e6c365] to-[#ac8d35] text-[#041706] 
                 font-[Manrope] text-xs tracking-widest uppercase px-4 py-2">
                 Export
             </button>
