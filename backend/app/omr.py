@@ -115,7 +115,7 @@ def extract_measure_bboxes(num_groups, staffs, barlines, img_width):
                 continue
             group_bboxes.append((x1, y_upper, x2, y_lower))
             
-        bbox_coords.extend(group_bboxes[:-1])#[:-1])  # drop the last (empty trailing space)
+        bbox_coords.extend(group_bboxes)#[:-1])  # drop the last (empty trailing space)
     return bbox_coords
 
 def large_bbox_contains_small_bbox(large_bbox, small_bbox):

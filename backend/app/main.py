@@ -58,6 +58,7 @@ def process_image(fdst_path, basename):
 
     notes = extract_notes_from_oemer(layers.get_layer('notes'))
     result = link_noteheads_to_measures(result, notes, unit_staff_size, dewarped.shape[0])
+    result['measures'] = [m for m in result['measures'] if len(m.get('notes', [])) > 0]
     
     dewarped_path = os.path.join(UPLOAD_DIR, f"{basename}_dewarped.png")
     cv2.imwrite(dewarped_path, dewarped)
