@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import pymupdf, numpy as np
 
-from .omr import (parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures, 
+from .omr import (extract_key_from_oemer, parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures, 
                   extract_notes_from_oemer, render_annotated_image)
 import os, argparse
 from oemer.ete import extract
@@ -40,7 +40,7 @@ def process_image(fdst_path, basename):
         img_path=fdst_path, output_path=UPLOAD_DIR, use_tf=False, save_cache=True, without_deskew=False)
     extract(args)
     xmlpath = os.path.join(UPLOAD_DIR, f"{basename}.musicxml")
-    result = parse_musicxml(xmlpath)
+    result = {"key": extract_key_from_oemer()}
 
     dewarped = layers.get_layer('original_image')
     

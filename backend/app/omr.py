@@ -1,5 +1,7 @@
 import xml.etree.ElementTree as ET
 import cv2
+from oemer.build_system import Measure
+from oemer import layers
 
 def parse_musicxml(filepath: str) -> dict:
     tree = ET.parse(filepath)
@@ -189,3 +191,39 @@ def render_annotated_image(result, img, unit_staff_size):
             cv2.putText(img, pitch_label, (int(x),int(y)),
                        cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), 1)
     return img
+
+def extract_key_from_oemer() -> dict:
+    FLATS_ORDER  = ["B", "E", "A", "D", "G", "C", "F"]
+    SHARPS_ORDER = ["F", "C", "G", "D", "A", "E", "B"]
+
+    try:
+        sfns = layers.get_layer('sfns')
+        clefs = layers.get_layer('clefs')
+        measure = Measure()
+        measure.add_symbols(list(clefs) + list(sfns))
+        measure.at_beginning = True
+        measure.group = 0
+        key = measure.get_key()
+        fifths = key.value
+    except Exception:
+        fifths = 0
+
+    if fifths < 0:
+        key_signature = "♭"
+        key_signature_order = FLATS_ORDER[:abs(fifths)]
+    elif fifths > 0:
+        key_signature = "♯"
+        key_signature_order = SHARPS_ORDER[:fifths]
+    else:
+        key_signature = ""
+        key_signature_order = []
+
+    accidentals = [note + key_signature for note in key_signature_order] if key_signature else []
+    flat_or_sharp_or_none = "flat" if key_signature == "♭" else "sharp" if key_signature == "♯" else None
+    display = f"{len(key_signature_order)} {flat_or_sharp_or_none}(s): {', '.join(accidentals)}" if key_signature else "C major (no accidentals)"
+
+    return {
+        "fifths": fifths,
+        "accidentals": accidentals,
+        "display": display
+    }
