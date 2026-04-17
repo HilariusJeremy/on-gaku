@@ -125,42 +125,50 @@ def large_bbox_contains_small_bbox(large_bbox, small_bbox):
             (large_bbox['y1'] <= small_bbox['y1'] <= large_bbox['y2'])
         )
 
-def extract_notes_from_oemer(notes_layer, clefs_layer) -> list[dict]:
-    
-    output = []
-    
-    # Build a map of clef changes by track: {track: [(x_center, clef_type), ...]}
+def build_clef_map(clefs_layer) -> dict:
+    """
+    Returns a map of clef changes by track:
+    {
+        track: [(x_position, ClefType), ...]  sorted by x position
+    }
+    """
     clef_map = {}
     for clef in clefs_layer.tolist():
         if clef.track not in clef_map:
             clef_map[clef.track] = []
-        clef_map[clef.track].append((clef.x_center, clef.label))
+        x_pos = int(clef.bbox[0])  # left edge of clef bbox
+        clef_map[clef.track].append((x_pos, clef.label))
     
-    # Sort clef changes by x position for each track
     for track in clef_map:
         clef_map[track].sort(key=lambda c: c[0])
+    
+    return clef_map
+
+def get_clef_at_x(clef_map, track, x_pos) -> str:
+    changes = clef_map.get(track, [])
+    current_clef = None
+    for x, clef_type in changes:
+        if x <= x_pos:
+            current_clef = clef_type
+        else:
+            break
+    if current_clef is None:
+        return 'treble' if track == 0 else 'bass'
+    return 'treble' if current_clef == ClefType.G_CLEF else 'bass'
+
+def extract_notes_from_oemer(notes_layer, clef_map) -> list[dict]:
+    
+    output = []
     
     # Define pitch mappings
     G_CLEF_POS_TO_PITCH = ['D', 'E', 'F', 'G', 'A', 'B', 'C']
     F_CLEF_POS_TO_PITCH = ['F', 'G', 'A', 'B', 'C', 'D', 'E']
     
     for note in notes_layer.tolist():
-        # Determine which clef is active at this note's position
-        current_clef = None
-        if note.track in clef_map:
-            for x_pos, clef_type in clef_map[note.track]:
-                if x_pos <= note.bbox[0]:  # Find the last clef before or at this note
-                    current_clef = clef_type
-                else:
-                    break
+        current_clef = get_clef_at_x(clef_map, note.track, int(note.bbox[0]))
+        clef_type = ClefType.G_CLEF if current_clef == 'treble' else ClefType.F_CLEF
         
-        # Default clef if none found
-        if current_clef is None:
-            current_clef = ClefType.G_CLEF if note.track == 0 else ClefType.F_CLEF
-        
-        # Calculate pitch using the correct clef
-        pos = int(note.staff_line_pos)
-        if current_clef == ClefType.G_CLEF:
+        if current_clef == 'treble':
             order = G_CLEF_POS_TO_PITCH
             octave_offset = 4
             pitch_offset = 1
@@ -168,6 +176,9 @@ def extract_notes_from_oemer(notes_layer, clefs_layer) -> list[dict]:
             order = F_CLEF_POS_TO_PITCH
             octave_offset = 2
             pitch_offset = 3
+        
+        # Calculate pitch using the correct clef
+        pos = int(note.staff_line_pos)
         
         note_name = order[pos % 7] if pos >= 0 else order[pos % -7]
         octave = (pos + pitch_offset) // 7 + octave_offset
@@ -185,12 +196,13 @@ def extract_notes_from_oemer(notes_layer, clefs_layer) -> list[dict]:
             'pitch': f"{note_name}{octave}{'#' if accidental==1 else '♭' if accidental==-1 else ''}",
             'bbox': {'x1': int(note.bbox[0]), 'y1': int(note.bbox[1]), 'x2': int(note.bbox[2]), 'y2': int(note.bbox[3])},
             'track': note.track,
+            'clef': current_clef  
         })
     
     output.sort(key=lambda note: (note['bbox']['x1'], note['bbox']['y1']))
     return output
 
-def link_noteheads_to_measures(result, notes, unit_staff_size, img_height, scale=4):
+def link_noteheads_to_measures(result, notes, clef_map, unit_staff_size, img_height, scale=4):
     for measure in result['measures']:
         expanded_bbox = {
             'x1': measure['bbox']['x1'],
@@ -205,6 +217,13 @@ def link_noteheads_to_measures(result, notes, unit_staff_size, img_height, scale
             note for note in notes
             if large_bbox_contains_small_bbox(expanded_bbox, note['bbox'])
         ]
+
+        # add clef per track for this measure
+        measure_x = measure['bbox']['x1']
+        measure['clefs'] = {
+            0: get_clef_at_x(clef_map, 0, measure_x),
+            1: get_clef_at_x(clef_map, 1, measure_x)
+        }
     return result
 
 def render_annotated_image(result, img, unit_staff_size):

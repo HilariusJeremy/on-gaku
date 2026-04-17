@@ -10,11 +10,18 @@ const Sidebar = ({selectedMeasure, selectedNote, onSelectedNote}:
             </p>
         </div>
     )
+
+    const rightHandClef = selectedMeasure.clefs[0]
+    const leftHandClef = selectedMeasure.clefs[1]
+    const rightHandNotes = selectedMeasure.notes.filter(n => n.track === 0)
+    const leftHandNotes = selectedMeasure.notes.filter(n => n.track === 1)
+
     return (
      <div className="w-full lg:w-80 bg-[#0c200d] overflow-y-auto p-6 shrink-0 border-t lg:border-t-0 lg:border-l border-[#e6c365]/10">
-            <p className="text-[#e6c365]/50 font-[Manrope] text-xs tracking-widest uppercase mb-4">Treble</p>
+            <p className="text-[#e6c365]/50 font-[Manrope] text-xs tracking-widest uppercase mb-4">
+            Right Hand: {rightHandClef === 'treble' ? 'Treble Clef' : 'Bass Clef'}</p>
             <ul className="flex flex-col gap-2 mb-6">
-                {selectedMeasure.notes.filter(n => n.track === 0).map((note) =>
+                {rightHandNotes.map((note) =>
                     <div key={note.id} className="flex flex-col">
                         <button 
                             onClick={() => onSelectedNote(note, selectedMeasure)}
@@ -32,9 +39,10 @@ const Sidebar = ({selectedMeasure, selectedNote, onSelectedNote}:
                 )}
             </ul>
 
-            <p className="text-[#e6c365]/50 font-[Manrope] text-xs tracking-widest uppercase mb-4">Bass</p>
+            <p className="text-[#e6c365]/50 font-[Manrope] text-xs tracking-widest uppercase mb-4">
+            Left Hand: {leftHandClef === 'treble' ? 'Treble Clef' : 'Bass Clef'}</p>
             <ul className="flex flex-col gap-2">
-                {selectedMeasure.notes.filter(n => n.track === 1).map((note) =>
+                {leftHandNotes.map((note) =>
                     <div key={note.id} className="flex flex-col">
                         <button 
                             onClick={() => onSelectedNote(note, selectedMeasure)}

@@ -18,9 +18,10 @@ export interface Note {
 }
 
 export interface Measure { 
-  number: number, 
-  notes: Note[], 
-  bbox: Bbox 
+    number: number, 
+    notes: Note[], 
+    bbox: Bbox,
+    clefs: { 0: 'treble' | 'bass', 1: 'treble' | 'bass' }
 }
 
 export interface Bbox {

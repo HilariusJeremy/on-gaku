@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import pymupdf, numpy as np
 
-from .omr import (extract_key_from_oemer, parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures, 
+from .omr import (build_clef_map, extract_key_from_oemer, parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures, 
                   extract_notes_from_oemer, render_annotated_image)
 import os, argparse
 from oemer.ete import extract, clear_data
@@ -61,8 +61,9 @@ def process_image(fdst_path, basename):
         measure['bbox'] = {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)}
 
     clefs = layers.get_layer('clefs')
-    notes = extract_notes_from_oemer(layers.get_layer('notes'), clefs)
-    result = link_noteheads_to_measures(result, notes, unit_staff_size, dewarped.shape[0])
+    clef_map = build_clef_map(layers.get_layer('clefs'))
+    notes = extract_notes_from_oemer(layers.get_layer('notes'), clef_map)
+    result = link_noteheads_to_measures(result, notes, clef_map, unit_staff_size, dewarped.shape[0])
     result['measures'] = [m for m in result['measures'] if len(m.get('notes', [])) > 0]
     
     dewarped_path = os.path.join(UPLOAD_DIR, f"{basename}_dewarped.png")
