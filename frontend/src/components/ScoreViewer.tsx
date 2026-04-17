@@ -10,19 +10,18 @@ const ScoreViewer = ({result, onSelectedMeasure, onSelectedNote, selectedMeasure
     const [scale, setScale] = useState(1)
     const imgRef = useRef<HTMLImageElement>(null)
 
-    const handleLoad = () => {
-    requestAnimationFrame(() => {
-        if (!imgRef.current) return
-        const natural = imgRef.current.naturalWidth
-        const rendered = imgRef.current.getBoundingClientRect().width
-        if (natural === 0) return
-        setScale(rendered / natural)
-    })
-}
-
     useEffect(() => {
-    handleLoad()
-})
+        if (!imgRef.current) return
+        const observer = new ResizeObserver(() => {
+            if (!imgRef.current) return
+            const natural = imgRef.current.naturalWidth
+            const rendered = imgRef.current.getBoundingClientRect().width
+            if (natural === 0 || rendered === 0) return
+            setScale(rendered / natural)
+        })
+        observer.observe(imgRef.current)
+        return () => observer.disconnect()
+    }, [result])
 
     if (!result) return null
 
@@ -63,7 +62,8 @@ const ScoreViewer = ({result, onSelectedMeasure, onSelectedNote, selectedMeasure
     return (    
     <div className="relative flex-1 overflow-auto bg-[#041706] min-h-0">
         <div className="relative inline-block">
-            <img className="max-w-full h-auto block" onLoad={handleLoad} src={result['img_url']} ref={imgRef}/>
+            {
+            <img className="max-w-full h-auto block" src={result['img_url']} ref={imgRef}/>}
             {measure_bbox}
             {note_bbox}
         </div>
