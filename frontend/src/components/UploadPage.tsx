@@ -57,7 +57,7 @@ const UploadPage = ({onResult}: {onResult: (data: AnnotationData) => void}) => {
                         <LoadingSpinner/>
                         <button onClick={handleCancel}
                             className="text-[#e6c365] font-[Manrope] text-xs tracking-widest 
-                            uppercase hover:text-[#e6c365] transition-colors">
+                            uppercase hover:text-[#e6c365] transition-colors cursor-pointer">
                             Cancel
                         </button>
                     </div>
