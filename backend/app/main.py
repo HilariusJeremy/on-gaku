@@ -39,7 +39,7 @@ def process_image(fdst_path, basename):
     clear_data()
     
     args = argparse.Namespace(
-        img_path=fdst_path, output_path=UPLOAD_DIR, use_tf=False, save_cache=True, without_deskew=False)
+        img_path=fdst_path, output_path=UPLOAD_DIR, use_tf=False, save_cache=True, without_deskew=True)
     extract(args)
     print(f"Processing: {fdst_path}")
     print(f"PKL would be: {os.path.splitext(fdst_path)[0]}.pkl")
@@ -90,7 +90,7 @@ async def annotate(file: UploadFile = File(...)):
         doc = pymupdf.open(fdst_path)
         all_results = []
         for page_index, page in enumerate(doc): # iterate over pdf pages
-            pix = page.get_pixmap(matrix=pymupdf.Matrix(2,2)) # zoom for better image resolution
+            pix = page.get_pixmap(matrix=pymupdf.Matrix(2.5,2.5))
             np_array = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, pix.n) # convert to numpy array
             page_basename = f"{basename}_page{page_index}"
             page_path = os.path.join(UPLOAD_DIR, f"{page_basename}.png")
