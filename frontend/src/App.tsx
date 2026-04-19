@@ -3,6 +3,7 @@ import { useState } from 'react'
 import ScoreViewer from './components/ScoreViewer'
 import Sidebar from './components/Sidebar'
 import UploadPage from './components/UploadPage'
+import { API_URL } from './api'
 
 export interface Key {
     fifths: number,
@@ -66,7 +67,7 @@ function App() {
 }
 
   const handleExport = async () => {
-    const url = "http://localhost:8000/export";
+    const url = `${API_URL}/export`;
     try {
       const response = await fetch(url)
       if (!response.ok) {

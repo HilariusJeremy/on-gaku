@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRef } from 'react';
 import type { AnnotationData, Measure, Note } from '../App';
+import { API_URL } from '../api'
 
 
 const ScoreViewer = ({result, onSelectedMeasure, onSelectedNote, selectedMeasure, selectedNote}: 
@@ -63,7 +64,7 @@ const ScoreViewer = ({result, onSelectedMeasure, onSelectedNote, selectedMeasure
     <div className="relative flex-1 overflow-auto bg-[#041706] min-h-0">
         <div className="relative inline-block">
             {
-            <img className="max-w-full h-auto block" src={result['img_url']} ref={imgRef}/>}
+            <img className="max-w-full h-auto block" src={`${API_URL}${result['img_url']}`} ref={imgRef}/>}
             {measure_bbox}
             {note_bbox}
         </div>

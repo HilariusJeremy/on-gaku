@@ -18,7 +18,8 @@ os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 origins = [
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "https://on-gaku.vercel.app"
 ]
 
 app.add_middleware(

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type {AnnotationData} from '../App'
 import LoadingSpinner from './LoadingSpinner/LoadingSpinner';
+import { API_URL } from '../api'
 
 const UploadPage = ({onResult}: {onResult: (data: AnnotationData) => void}) => {
     const [loading, setLoading] = useState(false)
@@ -14,7 +15,7 @@ const UploadPage = ({onResult}: {onResult: (data: AnnotationData) => void}) => {
         setLoading(true)
         formData.append('file', file)
         controllerRef.current = new AbortController()
-        fetch('/annotate', {method: 'POST', body: formData, signal: controllerRef.current?.signal})
+        fetch(`${API_URL}/annotate`, {method: 'POST', body: formData, signal: controllerRef.current?.signal})
             .then(res => res.json())
             .then(
                 data => {
