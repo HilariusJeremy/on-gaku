@@ -72,6 +72,9 @@ def process_image(fdst_path, basename):
     
     return result, dewarped
 
+@app.get("/")
+async def root():
+    return {"status": "ok"}
 
 @app.post("/annotate")
 async def annotate(file: UploadFile = File(...)):
