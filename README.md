@@ -1,4 +1,4 @@
-# 🎹 On-gaku (音楽) – Sheet Music Learning Companion
+# 🎹 On-gaku (音楽) – Piano Sheet Music Annotation
 
 An AI-powered visual learning tool for beginner piano students to read sheet music faster.
 
