@@ -17,6 +17,7 @@ An AI-powered visual learning tool for beginner piano students to read sheet mus
 | **Annotation** | Detects every notehead using optical music recognition and overlays the note name (C, D, E, etc.) directly on the score as a clickable SVG layer |
 | **Theory Analysis** | Identifies the key signature, clef type (treble/bass), and determines which notes belong to each hand |
 | **Interactive Learning** | Click any measure or note to see a piano keyboard visualization showing exactly where that note is played |
+| **Export** | Download the annotated sheet music as a PNG image with all note labels baked in |
 
 ### 📋 Supported Input Formats
 - PNG, JPEG sheet music images
@@ -30,3 +31,4 @@ An AI-powered visual learning tool for beginner piano students to read sheet mus
 ---
 
 ## How It Works
+User Upload ↓ ┌─────────────────────────────────────┐ │ Backend: Optical Music │ │ Recognition (oemer) │ │ - Detect noteheads │ │ - Identify staff lines │ │ - Extract measure boundaries │ │ - Determine clefs & key │ └─────────────────────────────────────┘ ↓ ┌─────────────────────────────────────┐ │ Note Mapping │ │ - Assign notes to measures │ │ - Link treble/bass clefs │ │ - Resolve key signature │ └─────────────────────────────────────┘ ↓ ┌─────────────────────────────────────┐ │ Frontend: Interactive Display │ │ - Overlay SVG note labels │ │ - Clickable measures & notes │ │ - Piano keyboard reference │ │ - Download annotated image │ └─────────────────────────────────────┘
