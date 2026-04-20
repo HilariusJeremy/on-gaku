@@ -2,7 +2,7 @@
 
 An AI-powered visual learning tool for beginner piano students to read sheet music faster.
 
-**Upload** any sheet music image or PDF → **Get** note labels + music theory insights → **Learn** with interactive note-to-piano mapping.
+**Upload** any sheet music image or PDF → **Get** note labels → **Learn** with interactive note-to-piano mapping.
 
 [Live Demo](https://on-gaku.vercel.app) | [Report Issue](https://github.com/HilariusJeremy/on-gaku/issues)
 
