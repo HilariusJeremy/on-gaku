@@ -11,6 +11,8 @@ from oemer.ete import extract, clear_data
 from oemer import layers
 import cv2
 
+UPLOAD_DIR = "uploads"
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
 app = FastAPI()
 
@@ -30,7 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 last_result = None
 last_img = None
@@ -83,6 +84,9 @@ async def annotate(file: UploadFile = File(...)):
     if file.content_type not in ["image/png", "image/jpeg", "application/pdf"]:
         raise HTTPException(status_code=400, detail="Only PNG, JPEG, and PDF supported.")
     
+    if file.size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 5MB.")
+
     fname = file.filename
     basename = os.path.splitext(fname)[0]
     fdst_path = os.path.join(UPLOAD_DIR, fname)
