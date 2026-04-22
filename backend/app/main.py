@@ -3,6 +3,11 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import pymupdf, numpy as np
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.errors import RateLimitExceeded
+from fastapi import Request
 
 from .omr import (build_clef_map, extract_key_from_oemer, parse_musicxml, extract_measure_bboxes, link_noteheads_to_measures, 
                   extract_notes_from_oemer, render_annotated_image)
@@ -14,7 +19,12 @@ import cv2
 UPLOAD_DIR = "uploads"
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
 
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
@@ -63,7 +73,7 @@ def process_image(fdst_path, basename):
         measure['bbox'] = {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)}
 
     clefs = layers.get_layer('clefs')
-    clef_map = build_clef_map(layers.get_layer('clefs'))
+    clef_map = build_clef_map(clefs)
     notes = extract_notes_from_oemer(layers.get_layer('notes'), clef_map)
     result = link_noteheads_to_measures(result, notes, clef_map, unit_staff_size, dewarped.shape[0])
     result['measures'] = [m for m in result['measures'] if len(m.get('notes', [])) > 0]
@@ -79,7 +89,8 @@ async def root():
     return {"status": "ok"}
 
 @app.post("/annotate")
-async def annotate(file: UploadFile = File(...)):
+@limiter.limit("1/hour")
+async def annotate(request: Request, file: UploadFile = File(...)):
     global last_result, last_img, last_filename
     if file.content_type not in ["image/png", "image/jpeg", "application/pdf"]:
         raise HTTPException(status_code=400, detail="Only PNG, JPEG, and PDF supported.")
@@ -120,7 +131,8 @@ async def annotate(file: UploadFile = File(...)):
 
 
 @app.get("/export")
-async def export():
+@limiter.limit("1/hour")
+async def export(request: Request):
     if last_result is None or last_img is None:
         raise HTTPException(status_code=400, detail="No annotation to export. Run /annotate first.")
     staffs = layers.get_layer('staffs')
@@ -129,5 +141,4 @@ async def export():
     export_path = os.path.join(UPLOAD_DIR, 'annotated.png')
     cv2.imwrite(export_path, annotated)
     return FileResponse(export_path, media_type='image/png', filename=f'{last_filename}_annotated.png')
-    
 
