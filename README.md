@@ -31,4 +31,23 @@ An AI-powered visual learning tool for beginner piano students to read sheet mus
 ---
 
 ## How It Works
-User Upload ↓ ┌─────────────────────────────────────┐ │ Backend: Optical Music │ │ Recognition (oemer) │ │ - Detect noteheads │ │ - Identify staff lines │ │ - Extract measure boundaries │ │ - Determine clefs & key │ └─────────────────────────────────────┘ ↓ ┌─────────────────────────────────────┐ │ Note Mapping │ │ - Assign notes to measures │ │ - Link treble/bass clefs │ │ - Resolve key signature │ └─────────────────────────────────────┘ ↓ ┌─────────────────────────────────────┐ │ Frontend: Interactive Display │ │ - Overlay SVG note labels │ │ - Clickable measures & notes │ │ - Piano keyboard reference │ │ - Download annotated image │ └─────────────────────────────────────┘
+## Architecture
+
+The pipeline processes an uploaded sheet music image through three stages:
+
+**1. Backend — Optical Music Recognition (oemer)**
+- Detect noteheads
+- Identify staff lines
+- Extract measure boundaries
+- Determine clefs & key signature
+
+**2. Note Mapping**
+- Assign notes to measures
+- Link treble & bass clefs
+- Resolve key signature
+
+**3. Frontend — Interactive Display**
+- Overlay SVG note labels
+- Clickable measures & notes
+- Piano keyboard reference
+- Download annotated image
